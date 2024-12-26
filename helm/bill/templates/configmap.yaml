@@ -1,0 +1,15 @@
+{{- $name := include "bill.fullname" . -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "cfg-{{ $name }}"
+  labels:
+    app: {{ template "bill.name" . }}
+    chart: {{ template "bill.chart" .}}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  DatabaseSettings__ConnectionString: mongodb://billdb:27017
+  DatabaseSettings__DatabaseName: billDb
+  DatabaseSettings__CollectionName: bills

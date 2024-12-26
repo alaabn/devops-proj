@@ -1,0 +1,99 @@
+services:
+  nats:
+    image: nats:2.9-alpine
+    ports:
+      - "4222:4222" # client port
+      - "8222:8222" # monitoring port
+    networks:
+      - microservices-network
+
+  db:
+    image: mongo:7.0-jammy
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: alaa
+      MONGO_INITDB_ROOT_PASSWORD: polytec
+    volumes:
+      - mongo-data:/data/db
+      - ./seed.js:/docker-entrypoint-initdb.d/seed.js:ro
+    networks:
+      - microservices-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - microservices-network
+
+  customer-service:
+    build:
+      context: ./services/customer-service
+      dockerfile: dockerfile
+    depends_on:
+      - nats
+      - db
+    networks:
+      - microservices-network
+
+  personnel-service:
+    build:
+      context: ./services/personnel-service
+      dockerfile: dockerfile
+    depends_on:
+      - nats
+      - db
+    networks:
+      - microservices-network
+
+  billing-service:
+    build:
+      context: ./services/billing-service
+      dockerfile: dockerfile
+    depends_on:
+      - nats
+      - db
+    networks:
+      - microservices-network
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: dockerfile
+    depends_on:
+      - nats
+      - db
+    networks:
+      - microservices-network
+
+  repair-service:
+    build:
+      context: ./services/repair-service
+      dockerfile: dockerfile
+    depends_on:
+      - nats
+      - db
+    networks:
+      - microservices-network
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: dockerfile
+    depends_on:
+      - nats
+      - db
+    ports:
+      - "3030:3030"
+    networks:
+      - microservices-network
+
+volumes:
+  mongo-data:
+
+networks:
+  microservices-network:
+    driver: bridge

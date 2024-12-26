@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repair
+  labels:
+    app: repair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repair
+  template:
+    metadata:
+      labels:
+        app: repair
+    spec:
+      containers:
+        - name: repair
+          image: your-repair-image:latest
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: repair-secrets
+                  key: MONGO_URI
+            - name: NATS_SERVER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: repair-secrets
+                  key: NATS_SERVER_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: repair-secrets
+                  key: JWT_SECRET
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"

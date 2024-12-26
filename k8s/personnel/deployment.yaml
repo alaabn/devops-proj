@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personnel
+  labels:
+    app: personnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: personnel
+  template:
+    metadata:
+      labels:
+        app: personnel
+    spec:
+      containers:
+        - name: personnel
+          image: your-personnel-image:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: personnel-secrets
+                  key: MONGO_URI
+            - name: NATS_SERVER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: personnel-secrets
+                  key: NATS_SERVER_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: personnel-secrets
+                  key: JWT_SECRET
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"

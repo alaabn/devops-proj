@@ -1,0 +1,25 @@
+FROM node:22-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
+WORKDIR /app
+
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install 
+
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install 
+RUN pnpm run build
+
+FROM gcr.io/distroless/nodejs22-debian12 As production
+
+WORKDIR /app
+
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=base /app/.env  .
+COPY --from=build /app/dist/ ./dist
+
+EXPOSE 3030
+
+CMD [ "./dist/main.js" ]

@@ -1,0 +1,44 @@
+# FROM node:20.15-bookworm-slim AS base
+# ENV NEXT_TELEMETRY_DISABLED=1
+
+# FROM base AS installer
+# ENV NEXT_TELEMETRY_DISABLED=1
+# WORKDIR /app
+# COPY . .
+# RUN npm ci
+# RUN npm run build
+
+# FROM gcr.io/distroless/nodejs20-debian12:nonroot AS runner
+# WORKDIR /app
+
+# COPY --chown=nonroot:nonroot --from=installer /app/.env .
+# COPY --chown=nonroot:nonroot --from=installer /app/next.config.mjs .
+# COPY --chown=nonroot:nonroot --from=installer /app/package.json .
+# COPY --chown=nonroot:nonroot --from=installer /app/.next/standalone ./
+# COPY --chown=nonroot:nonroot --from=installer /app/.next/static ./apps/app/.next/static
+# COPY --chown=nonroot:nonroot --from=installer /app/public ./apps/app/public
+
+# USER nonroot
+
+# ENV NODE_ENV="production"
+# ENV NEXT_TELEMETRY_DISABLED=1
+# EXPOSE 3000
+# CMD [ "server.js" ]
+
+FROM gcr.io/distroless/nodejs20-debian12:nonroot AS runner
+
+WORKDIR /app
+
+COPY --chown=nonroot:nonroot ./public ./public
+COPY --chown=nonroot:nonroot ./.next/standalone ./
+COPY --chown=nonroot:nonroot ./.next/static ./.next/static
+
+USER nonroot
+
+ENV NODE_ENV="production"
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+
+EXPOSE 3000
+
+CMD [ "server.js" ]

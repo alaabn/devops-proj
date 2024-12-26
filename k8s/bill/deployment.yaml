@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bill
+  labels:
+    app: bill
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bill
+  template:
+    metadata:
+      labels:
+        app: bill
+    spec:
+      containers:
+        - name: bill
+          image: your-bill-image:latest
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: bill-secrets
+                  key: MONGO_URI
+            - name: NATS_SERVER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: bill-secrets
+                  key: NATS_SERVER_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: bill-secrets
+                  key: JWT_SECRET
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
